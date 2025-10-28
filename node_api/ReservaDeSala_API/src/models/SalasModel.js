@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
 
-const Usuario = sequelize.define('Usuario', {
+const Sala = sequelize.define('Sala', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -11,19 +11,23 @@ const Usuario = sequelize.define('Usuario', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true
-    },
-    senha: {
-        type: DataTypes.STRING,
+    tipo: {
+        type: DataTypes.ENUM('laboratorio', 'aula', 'reuniao', 'auditório'),
         allowNull: false
     },
-    perfil: {
-        type: DataTypes.ENUM('admin', 'comum'),
+    capacidade: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 'comum'
+        validate: { min: 1 }
+    },
+    localizacao: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    disponivel: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
     },
     criado_em: {
         type: DataTypes.DATE,
@@ -31,15 +35,14 @@ const Usuario = sequelize.define('Usuario', {
         defaultValue: DataTypes.NOW
     }
 }, {
-    tableName: 'usuarios',
+    tableName: 'salas',
     timestamps: false
 });
-
 // associações
-Usuario.associate = (models) => {
+Sala.associate = (models) => {
     if (models.Reserva) {
-        Usuario.hasMany(models.Reserva, { foreignKey: 'usuario_id', as: 'reservas' });
+        Sala.hasMany(models.Reserva, { foreignKey: 'sala_id', as: 'reservas' });
     }
 };
 
-export default Usuario;
+export default Sala;
