@@ -1,6 +1,4 @@
 import express from 'express';
-const router = express.Router();
-
 import {
     criarUsuario,
     obterUsuarios,
@@ -9,11 +7,13 @@ import {
     deletarUsuario
 } from '../controllers/UsuarioController.js';
 
-// Definição as rotas para os usuários
-router.post('/usuarios', criarUsuario);
-router.get('/usuarios', obterUsuarios);
-router.get('/usuarios/:id', obterUsuarioPorId);
-router.put('/usuarios/:id', atualizarUsuario);
-router.delete('/usuarios/:id', deletarUsuario);
+const router = express.Router();
+
+// Definição das rotas relativas — o prefixo '/usuarios' vem do app.js
+router.post('/', criarUsuario);
+router.get('/', obterUsuarios);
+router.get('/:id', obterUsuarioPorId);
+router.put('/:id', atualizarUsuario);
+router.delete('/:id', deletarUsuario);
 
 export default router;
