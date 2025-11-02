@@ -57,7 +57,19 @@ export const obterReservaPorId = async (req, res) => {
         return res.status(500).json({ error: 'Erro ao obter reserva por ID' });
     }
 };
-
+export const atualizarReserva = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reserva = await Reserva.findByPk(id);
+        if (!reserva) return res.status(404).json({ error: 'Reserva não encontrada' });
+        const { sala_id, usuario_id, data_reserva, hora_inicio, hora_fim } = req.body;
+        await reserva.update({ sala_id, usuario_id, data_reserva, hora_inicio, hora_fim });
+        return res.status(200).json(reserva);
+    } catch (error) {
+        console.error('Erro ao atualizar reserva:', error);
+        return res.status(500).json({ error: 'Erro ao atualizar reserva' });
+    }
+};
 export const listarMinhasReservas = async (req, res) => {
     try {
         const usuario_id = req.params.usuarioId ?? req.params.usuario_id;
