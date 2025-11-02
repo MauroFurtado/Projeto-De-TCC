@@ -4,6 +4,7 @@ import {
     listarReservas,
     obterReservaPorId,
     listarMinhasReservas,
+    atualizarReserva,
     deletarReserva
 } from '../controllers/ReservaController.js';
 
@@ -11,7 +12,9 @@ const router = express.Router();
 
 router.post('/', criarReserva);
 router.get('/', listarReservas);
-router.get('/minhas', listarMinhasReservas);
+router.put('/:id', atualizarReserva);
+router.get('/minhas/:usuarioId', listarMinhasReservas);
+
 router.get('/:id', obterReservaPorId);
 router.delete('/:id', deletarReserva);
 
