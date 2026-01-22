@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore; 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ResrvaDeSala_API.Data;
 using ResrvaDeSala_API.Models;
 using ResrvaDeSala_API.DTOs;
@@ -9,12 +10,13 @@ namespace ReservaDeSala_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SalaController : ControllerBase
+    //[Authorize]
+    public class SalasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public SalaController(ApplicationDbContext context, IMapper mapper)
+        public SalasController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -54,12 +56,9 @@ namespace ReservaDeSala_API.Controllers
             return CreatedAtAction(nameof(GetSala), new { id = sala.Id }, createdSalaDto);
         }
 
-        // PUT: api/Sala/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateSala(int id, SalaDto salaDto)
         {
-            if (id != salaDto.Id) return BadRequest();
-
             var sala = await _context.Salas.FindAsync(id);
             if (sala == null) return NotFound();
 
@@ -68,6 +67,7 @@ namespace ReservaDeSala_API.Controllers
 
             return NoContent();
         }
+
 
         // DELETE: api/Sala/{id}
         [HttpDelete("{id}")]

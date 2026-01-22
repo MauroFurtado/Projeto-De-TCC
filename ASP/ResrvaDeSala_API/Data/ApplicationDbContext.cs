@@ -1,11 +1,17 @@
 ﻿using dotenv.net;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using ResrvaDeSala_API.Models;
 
 namespace ResrvaDeSala_API.Data
 {
     public partial class ApplicationDbContext : DbContext
     {
+        static ApplicationDbContext()
+        {
+            TryRegisterPostgresEnums();
+        }
+
         public ApplicationDbContext() { }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -17,6 +23,11 @@ namespace ResrvaDeSala_API.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            if (optionsBuilder.IsConfigured)
+            {
+                return;
+            }
+
             try { DotEnv.Load(); } catch { /* fallback */ }
 
             var host = Environment.GetEnvironmentVariable("DB_HOST");
@@ -33,7 +44,7 @@ namespace ResrvaDeSala_API.Data
         {
             modelBuilder
                 .HasPostgresEnum("perfil_usuario", new[] { "admin", "comum" })
-                .HasPostgresEnum("tipo_sala", new[] { "laboratorio", "aula", "reuniao", "auditório" });
+                .HasPostgresEnum<TipoSala>("public", "tipo_sala");
 
             // Usar nomes exatamente em minúsculas / snake_case para combinar com o banco (evita "Usuarios" com U maiúsculo)
             modelBuilder.Entity<UsuarioModel>(entity =>
@@ -101,5 +112,21 @@ namespace ResrvaDeSala_API.Data
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+        private static void TryRegisterPostgresEnums()
+        {
+            try
+            {
+                NpgsqlConnection.GlobalTypeMapper.MapEnum<TipoSala>("public.tipo_sala");
+            }
+            catch (ArgumentException)
+            {
+                // already mapped
+            }
+            catch (InvalidOperationException)
+            {
+                // already mapped
+            }
+        }
     }
 }

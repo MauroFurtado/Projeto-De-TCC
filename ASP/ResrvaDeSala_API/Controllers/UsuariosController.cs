@@ -1,20 +1,24 @@
 using ResrvaDeSala_API.Data;
 using ResrvaDeSala_API.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using ResrvaDeSala_API.DTOs;
 using Microsoft.EntityFrameworkCore; 
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ReservaDeSala_API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UsuarioController : ControllerBase
+//[Authorize]
+public class UsuariosController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IMapper _mapper;
 
-    public UsuarioController(ApplicationDbContext context, IMapper mapper)
+    public UsuariosController(ApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
@@ -25,6 +29,7 @@ public class UsuarioController : ControllerBase
     public async Task<ActionResult> CreateUsuarioAsync([FromBody] UsuarioCreateDto usuarioDto)
     {
         var usuario = _mapper.Map<UsuarioModel>(usuarioDto);
+        usuario.Senha = HashPassword(usuarioDto.Senha);
         _context.Usuarios.Add(usuario);
         await _context.SaveChangesAsync();
 
@@ -66,7 +71,7 @@ public class UsuarioController : ControllerBase
             return NotFound();
         }
 
-        _mapper.Map(usuarioDto, usuario); // requires mapping UsuarioDto -> UsuarioModel
+        _mapper.Map(usuarioDto, usuario);
         await _context.SaveChangesAsync();
 
         return NoContent();
@@ -86,5 +91,12 @@ public class UsuarioController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private static string HashPassword(string password)
+    {
+        using var sha256 = SHA256.Create();
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(hashedBytes);
     }
 }
