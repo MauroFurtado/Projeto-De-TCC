@@ -30,6 +30,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Do not auto-append slashes to URLs
+APPEND_SLASH = False
+
 
 # Application definition
 
@@ -41,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    "dotenv",'core',
+    'core.apps.CoreConfig',
 ]
 
 MIDDLEWARE = [
@@ -85,6 +88,8 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD', os.environ.get('POSTGRES_PASSWORD', '')),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', os.environ.get('POSTGRES_PORT', '5432')),
+        'CONN_MAX_AGE': 600,  # Reutiliza conexões por 10 minutos (psycopg3)
+        'CONN_HEALTH_CHECKS': True,  # Health checks de conexão
     }
 }
 
@@ -129,3 +134,27 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'TIME_FORMAT': '%H:%M',
+    'TIME_INPUT_FORMATS': ['%H:%M', '%H:%M:%S'],
+}
+
+# JWT Config
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+}
+
+# Flag para desabilitar autenticação em testes
+AUTH_DISABLED = os.environ.get('AUTH_DISABLED', 'false').lower() == 'true'
