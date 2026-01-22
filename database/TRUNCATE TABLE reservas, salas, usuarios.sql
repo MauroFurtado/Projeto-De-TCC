@@ -1,0 +1,4 @@
+TRUNCATE TABLE reservas, salas, usuarios
+RESTART IDENTITY
+CASCADE;
+ 

@@ -18,7 +18,7 @@ CREATE DATABASE ReservaSalas
 -- ENUMS
 -- ==========================
 CREATE TYPE perfil_usuario AS ENUM ('admin', 'comum');
-CREATE TYPE tipo_sala AS ENUM ('laboratorio', 'aula', 'reuniao', 'auditório');
+CREATE TYPE tipo_sala AS ENUM ('laboratorio', 'aula', 'reuniao', 'auditorio');
 
 -- ==========================
 -- USUÁRIOS
