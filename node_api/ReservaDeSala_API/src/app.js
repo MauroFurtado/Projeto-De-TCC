@@ -18,9 +18,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/usuarios',auth, UsuarioRoute);
-app.use('/salas', auth, SalaRoute);
-app.use('/reservas', auth, ReservaRoute);
+app.use('/api/usuarios',auth, UsuarioRoute);
+app.use('/api/salas', auth, SalaRoute);
+app.use('/api/reservas', auth, ReservaRoute);
 
 // Health endpoint que verifica conexão com o banco
 app.get('/health', async (req, res) => {
