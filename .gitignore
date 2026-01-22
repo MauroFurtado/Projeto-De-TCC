@@ -134,3 +134,50 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Django / Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+db.sqlite3
+env/
+venv/
+.venv/
+venv*/
+.Python
+.python-version
+media/
+staticfiles/
+static/
+*.egg-info/
+pip-wheel-metadata/
+htmlcov/
+.coverage
+.mypy_cache/
+.pytest_cache/
+
+# ASP.NET / Visual Studio / .NET Core
+[Bb]in/
+[Oo]bj/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+publish/
+artifacts/
+packages/
+*.nupkg
+project.lock.json
+*.dbmdl
+*.vsp
+*.vspx
+
+# Optional / local config
+appsettings.*.json
+# do NOT ignore Django migrations (keep apps/*/migrations/*.py under source control)
