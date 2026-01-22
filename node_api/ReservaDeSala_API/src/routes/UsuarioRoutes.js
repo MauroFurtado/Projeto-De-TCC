@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 // Definição das rotas relativas — o prefixo '/usuarios' vem do app.js
-router.post('/', criarUsuario);
+router.post('/', criarUsuario); 
 router.get('/', obterUsuarios);
 router.get('/:id', obterUsuarioPorId);
 router.put('/:id', atualizarUsuario);

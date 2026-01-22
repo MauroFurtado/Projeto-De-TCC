@@ -70,17 +70,6 @@ export const atualizarReserva = async (req, res) => {
         return res.status(500).json({ error: 'Erro ao atualizar reserva' });
     }
 };
-export const listarMinhasReservas = async (req, res) => {
-    try {
-        const usuario_id = req.params.usuarioId ?? req.params.usuario_id;
-        if (!usuario_id) return res.status(400).json({ error: 'usuario_id é obrigatório' });
-        const reservas = await Reserva.findAll({ where: { usuario_id } });
-        return res.status(200).json(reservas);
-    } catch (error) {
-        console.error('Erro ao obter reservas do usuário:', error);
-        return res.status(500).json({ error: 'Erro ao obter reservas do usuário' });
-    }
-};
 
 export const deletarReserva = async (req, res) => {
     try {

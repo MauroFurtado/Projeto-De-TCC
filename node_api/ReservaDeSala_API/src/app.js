@@ -4,6 +4,8 @@ import UsuarioRoute from './routes/UsuarioRoutes.js';
 import SalaRoute from './routes/SalaRoutes.js';
 import ReservaRoute from './routes/ReservaRoutes.js';
 import sequelize from './config/db.js';
+import { auth } from './middleware/auth.js';
+import { login } from './controllers/UsuarioController.js';
 
 
 dotenv.config();
@@ -16,9 +18,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/usuarios', UsuarioRoute);
-app.use('/salas', SalaRoute);
-app.use('/reservas', ReservaRoute);
+app.use('/usuarios',auth, UsuarioRoute);
+app.use('/salas', auth, SalaRoute);
+app.use('/reservas', auth, ReservaRoute);
 
 // Health endpoint que verifica conexão com o banco
 app.get('/health', async (req, res) => {
@@ -30,8 +32,9 @@ app.get('/health', async (req, res) => {
         return res.status(503).json({ status: 'error', db: 'disconnected', message: err.message });
     }
 });
+app.post('/login', login);
 
-// Start the server somente após confirmar conexão com o DB (tentativas com backoff)
+// Start the server somente após confirmar conexão com o DB e sincronizar modelos
 const start = async () => {
     const maxAttempts = 8;
     const delay = ms => new Promise(r => setTimeout(r, ms));
