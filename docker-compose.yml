@@ -1,51 +1,141 @@
-version: '3.8'
 services:
-
+  # ============================================
+  # Banco de Dados PostgreSQL
+  # ============================================
   postgres:
-    image: postgres:latest
+    image: postgres:16-alpine
     container_name: postgres_reserva_salas
-    env_file:
-      - ./.env
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-MauroFurtado}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-MGFurtad0}
+      POSTGRES_DB: ${POSTGRES_DB:-ReservaSalas}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h localhost"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-MauroFurtado} -d ${POSTGRES_DB:-ReservaSalas}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - reserva_network
     restart: unless-stopped
 
+  # ============================================
+  # API Node.js
+  # ============================================
   node_api:
     build:
       context: ./node_api/ReservaDeSala_API
       dockerfile: Dockerfile
-    container_name: reserva_salas_api
-    env_file:
-      - ./.env
-      - ./node_api/ReservaDeSala_API/.env
+    container_name: reserva_node_api
     environment:
-      - NODE_ENV=development
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_NAME=${POSTGRES_DB}
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-MauroFurtado}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-MGFurtad0}
+      DB_NAME: ${POSTGRES_DB:-ReservaSalas}
+      PORT: 3030
     ports:
-      - "3000:3000"
+      - "3001:3030"
     volumes:
-      - ./node_api/ReservaDeSala_API:/usr/src/app      # dev bind
+      - ./node_api/ReservaDeSala_API:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - reserva_network
     restart: unless-stopped
+
+  # ============================================
+  # API Django
+  # ============================================
+  django_api:
+    build:
+      context: ./Django
+      dockerfile: Dockerfile
+    container_name: reserva_django_api
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-ReservaSalas}
+      DB_USER: ${POSTGRES_USER:-MauroFurtado}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-MGFurtad0}
+      DJANGO_SETTINGS_MODULE: ReservaDeSalas.settings
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Django:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - reserva_network
+    restart: unless-stopped
+
+  # ============================================
+  # API ASP.NET Core
+  # ============================================
+  aspnet_api:
+    build:
+      context: ./ASP
+      dockerfile: Dockerfile
+    container_name: reserva_aspnet_api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:80
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ReservaSalas};Username=${POSTGRES_USER:-MauroFurtado};Password=${POSTGRES_PASSWORD:-MGFurtad0}"
+    ports:
+      - "5000:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - reserva_network
+    restart: unless-stopped
+
+  # ============================================
+  # cAdvisor - Monitoramento por container
+  # ============================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - reserva_network
+    restart: unless-stopped
+
+  # ============================================
+  # Prometheus - Armazenamento das métricas
+  # ============================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - cadvisor
+    networks:
+      - reserva_network
+    restart: unless-stopped
+
+networks:
+  reserva_network:
+    driver: bridge
 
 volumes:
   postgres_data:
+    driver: local
+ 
